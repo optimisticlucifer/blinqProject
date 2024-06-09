@@ -4,41 +4,49 @@ async function automateShopBlinq() {
     let driver = await new Builder().forBrowser('chrome').build();
 
     try {
+        //for login
         await driver.get('https://www.shop-blinq.io/login');
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/form/div[1]/div/input')).sendKeys('blinq_admin');
+        await driver.findElement(By.name('username')).sendKeys('blinq_admin');
         await driver.sleep(500);
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/form/div[2]/div/input')).sendKeys('let_me_in');
+        await driver.findElement(By.name('password')).sendKeys('let_me_in');
         await driver.sleep(500);
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/form/button')).click();
+        await driver.findElement(By.tagName('button')).click();
         await driver.wait(until.urlIs('https://www.shop-blinq.io/products'), 10000);
 
-        const productButtonXpaths = [
-            '/html/body/div[1]/div/div/div/div[1]/div/div[1]/button',
-            '/html/body/div[1]/div/div/div/div[2]/div/div[1]/button',
-            '/html/body/div[1]/div/div/div/div[3]/div/div[1]/button',
-            '/html/body/div[1]/div/div/div/div[4]/div/div[1]/button',
-            '/html/body/div[1]/div/div/div/div[5]/div/div[1]/button',
-        ];
 
-        for (let xpath of productButtonXpaths) {
-            await driver.findElement(By.xpath(xpath)).click();
+        //adding products to cart
+        const addToCartButtonUniqueCssClass ='css-t18qza';
+        const buttons = await driver.findElements(By.css(`.${addToCartButtonUniqueCssClass}`));
+        for (let button of buttons) {
+            await button.click();
             await driver.sleep(500);
         }
 
-        await driver.findElement(By.xpath('/html/body/div[1]/div/header/div/div[2]')).click();
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[2]/div/div/button')).click();
+        //to click on cart
+        await driver.findElement(By.id('cart')).click();
+        await driver.sleep(500);
 
-        
-        
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/div/form/div[1]/div/input')).sendKeys('Rohan');
-        await driver.sleep(500);
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/div/form/div[2]/div/input')).sendKeys('Bharti');
-        await driver.sleep(500);
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[1]/div/div/form/div[3]/div/input')).sendKeys('823001');
-        await driver.sleep(500);
-        await driver.findElement(By.xpath('/html/body/div[1]/div/div/div[2]/div/div/button')).click();
 
-        let confirmationElement = await driver.findElement(By.xpath('/html/body/div[1]/div/div/div/h4'));
+        //to click on checkOut
+        const checkoutButtonUniqueCss = 'css-i2gcwn';
+        await driver.findElement(By.className(checkoutButtonUniqueCss)).click();
+
+
+
+        //adding details for shopping 
+        const valueForInputField = ['Rohan', 'Bharti', '823001'];
+        const inputFields = await driver.findElements(By.css('.MuiOutlinedInput-input'));
+        for (let i = 0; i < inputFields.length; i++) {
+            await inputFields[i].sendKeys(i<valueForInputField.length ? valueForInputField[i] : "random");
+            await driver.sleep(500);
+        }
+
+        //to click on continue
+        await driver.findElement(By.className(checkoutButtonUniqueCss)).click();
+
+
+
+        let confirmationElement = await driver.findElement(By.xpath('//h4'));
         let confirmationText = await confirmationElement.getText();
 
         if (confirmationText === 'Thank you for your order') {
@@ -49,6 +57,8 @@ async function automateShopBlinq() {
 
         await driver.sleep(20000);
 
+    } catch (error) {
+        console.error('An error occurred:', error);
     } finally {
         await driver.quit();
     }
